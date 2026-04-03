@@ -12,17 +12,19 @@ import { usePlatform } from '../hooks/usePlatform';
 
 interface Props {
   card: VisitingCard;
+  savedCards?: VisitingCard[];
   onSave: (card: VisitingCard) => void;
   onCancel: () => void;
   key?: string;
 }
 
-export default function CardPreview({ card, onSave, onCancel }: Props) {
+export default function CardPreview({ card, savedCards, onSave, onCancel }: Props) {
   const platform = usePlatform();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isEnhanced, setIsEnhanced] = useState(false);
   const [data, setData] = useState<Partial<VisitingCard> | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'raw'>('info');
+  const [duplicateCard, setDuplicateCard] = useState<VisitingCard | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -65,13 +67,51 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
   };
 
   const openCalendar = (date: string) => {
-    const event = {
-      title: `Meeting with ${data?.name || 'Contact'}`,
-      details: `From Vizi Card: ${data?.fullText || ''}`,
-      location: data?.address || '',
-    };
-    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&details=${encodeURIComponent(event.details)}&location=${encodeURIComponent(event.location)}`;
-    window.open(url, '_blank');
+    const title = `Event with ${data?.name || 'Contact'}`;
+    const desc = `Extracted from Vizi Card Text:\n${data?.fullText || ''}`;
+    const location = data?.address || '';
+    
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      `SUMMARY:${title}`,
+      `DESCRIPTION:${desc.replace(/\n/g, '\\n')}`,
+      `LOCATION:${location}`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'meeting.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSaveClick = () => {
+    if (!savedCards || savedCards.length === 0) {
+      onSave({ ...card, ...data });
+      return;
+    }
+    
+    const possibleDuplicate = savedCards.find(sc => 
+      (sc.name && data?.name && sc.name.toLowerCase() === data.name.toLowerCase()) ||
+      (sc.email && data?.email && sc.email[0] === data.email[0])
+    );
+    
+    if (possibleDuplicate) {
+      setDuplicateCard(possibleDuplicate);
+    } else {
+      onSave({ ...card, ...data });
+    }
+  };
+  
+  const handleConfirmUpdate = () => {
+    onSave({ ...card, ...data, id: duplicateCard!.id });
   };
 
   return (
@@ -80,10 +120,10 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 100 }}
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
-      className="fixed inset-0 z-50 bg-slate-950 flex flex-col safe-top"
+      className="fixed inset-0 z-50 bg-slate-950 flex flex-col"
     >
       <div className="flex-1 overflow-y-auto px-4 pb-32">
-        <div className="flex justify-between items-center py-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-30">
+        <div className="flex justify-between items-center py-6 pt-[max(1.5rem,env(safe-area-inset-top))] sticky top-0 bg-slate-950/80 backdrop-blur-xl z-30">
           <motion.button 
             whileTap={{ scale: 0.9 }}
             onClick={onCancel} 
@@ -244,7 +284,7 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
       </div>
 
       {/* Fixed Footer Actions */}
-      <div className="absolute bottom-0 left-0 right-0 p-8 bg-slate-950/90 backdrop-blur-2xl border-t border-white/5 flex gap-4 safe-bottom">
+      <div className="absolute bottom-0 left-0 right-0 p-8 pb-[max(2rem,env(safe-area-inset-bottom))] bg-slate-950/90 backdrop-blur-2xl border-t border-white/5 flex gap-4">
         <motion.button 
           whileTap={{ scale: 0.95 }}
           onClick={onCancel}
@@ -255,7 +295,7 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
         </motion.button>
         <motion.button 
           whileTap={{ scale: 0.95 }}
-          onClick={() => onSave({ ...card, ...data })}
+          onClick={handleSaveClick}
           disabled={isProcessing}
           className={`flex-[2] h-16 rounded-2xl bg-gradient-to-r ${platform === 'ios' ? 'from-blue-500 to-indigo-600 shadow-blue-500/20' : 'from-teal-500 to-emerald-600 shadow-teal-500/20'} text-white font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 shadow-2xl disabled:opacity-50`}
         >
@@ -263,6 +303,37 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
           Add to Wallet
         </motion.button>
       </div>
+
+      <AnimatePresence>
+        {duplicateCard && (
+          <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ y: platform === 'ios' ? 300 : 0, opacity: 0, scale: platform === 'ios' ? 1 : 0.9 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: platform === 'ios' ? 300 : 0, opacity: 0, scale: platform === 'ios' ? 1 : 0.9 }}
+              className={`w-full max-w-sm ${platform === 'ios' ? 'bg-slate-900/90 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 mb-8' : 'bg-slate-800 rounded-3xl p-8 shadow-2xl m-auto'}`}
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Duplicate Found</h3>
+              <p className="text-sm text-slate-400 mb-6">A card visually matching existing item in wallet. Do you want to overwrite it with this scan?</p>
+              
+              <div className={`flex ${platform === 'ios' ? 'flex-col gap-3' : 'justify-end gap-2'}`}>
+                <button 
+                  onClick={() => setDuplicateCard(null)}
+                  className={`font-bold ${platform === 'ios' ? 'bg-slate-800 w-full p-4 rounded-xl text-white' : 'px-4 py-2 text-slate-300 hover:bg-white/5 rounded-full'}`}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleConfirmUpdate}
+                  className={`font-bold ${platform === 'ios' ? 'bg-blue-600 w-full p-4 rounded-xl text-white' : 'bg-teal-500/20 text-teal-400 px-6 py-2 rounded-full hover:bg-teal-500/30'}`}
+                >
+                  Update Existing
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -35,7 +35,8 @@ export default function App() {
   }, []);
 
   const saveCard = async (card: VisitingCard) => {
-    const updated = [card, ...savedCards];
+    const filtered = savedCards.filter(c => c.id !== card.id);
+    const updated = [card, ...filtered];
     setSavedCards(updated);
     await StorageService.saveCards(updated);
   };
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-white overflow-hidden font-sans selection:bg-teal-500/30">
       {/* Privacy Badge (Encrypted Logo) */}
+      {state === 'home' && (
       <div className="fixed top-6 right-6 z-[100] mt-[env(safe-area-inset-top,0px)]">
         <motion.button 
           initial={{ opacity: 0, scale: 0.5 }}
@@ -69,6 +71,7 @@ export default function App() {
           />
         </motion.button>
       </div>
+      )}
 
       <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
 
@@ -105,6 +108,7 @@ export default function App() {
           <CardPreview
             key="preview"
             card={currentCard}
+            savedCards={savedCards}
             onSave={(updatedCard) => {
               saveCard(updatedCard);
               setState('saved');

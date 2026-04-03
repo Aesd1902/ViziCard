@@ -93,7 +93,7 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
         </div>
 
         {/* Header Controls */}
-        <div className="absolute top-0 left-0 right-0 p-8 flex justify-between items-center z-30 safe-top">
+        <div className="absolute top-0 left-0 right-0 pt-[max(2rem,env(safe-area-inset-top))] px-8 pb-8 flex justify-between items-center z-30">
           <motion.button 
             whileTap={{ scale: 0.9 }}
             onClick={onBack}
