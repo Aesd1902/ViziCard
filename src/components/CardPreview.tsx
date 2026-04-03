@@ -114,6 +114,10 @@ export default function CardPreview({ card, savedCards, onSave, onCancel }: Prop
     onSave({ ...card, ...data, id: duplicateCard!.id });
   };
 
+  const handleSaveAsNew = () => {
+    onSave({ ...card, ...data });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 100 }}
@@ -316,16 +320,22 @@ export default function CardPreview({ card, savedCards, onSave, onCancel }: Prop
               <h3 className="text-xl font-bold text-white mb-2">Duplicate Found</h3>
               <p className="text-sm text-slate-400 mb-6">A card visually matching existing item in wallet. Do you want to overwrite it with this scan?</p>
               
-              <div className={`flex ${platform === 'ios' ? 'flex-col gap-3' : 'justify-end gap-2'}`}>
+              <div className={`flex ${platform === 'ios' ? 'flex-col gap-3' : 'flex-col sm:flex-row justify-end gap-3 mt-4'}`}>
                 <button 
                   onClick={() => setDuplicateCard(null)}
-                  className={`font-bold ${platform === 'ios' ? 'bg-slate-800 w-full p-4 rounded-xl text-white' : 'px-4 py-2 text-slate-300 hover:bg-white/5 rounded-full'}`}
+                  className={`font-bold transition-all ${platform === 'ios' ? 'bg-slate-800 w-full p-4 rounded-xl text-white' : 'px-4 py-2 text-slate-300 hover:bg-white/5 rounded-full'}`}
                 >
                   Cancel
                 </button>
                 <button 
+                  onClick={handleSaveAsNew}
+                  className={`font-bold transition-all ${platform === 'ios' ? 'bg-slate-700 w-full p-4 rounded-xl text-white' : 'px-4 py-2 text-slate-200 hover:bg-slate-700 rounded-full'}`}
+                >
+                  Save as New
+                </button>
+                <button 
                   onClick={handleConfirmUpdate}
-                  className={`font-bold ${platform === 'ios' ? 'bg-blue-600 w-full p-4 rounded-xl text-white' : 'bg-teal-500/20 text-teal-400 px-6 py-2 rounded-full hover:bg-teal-500/30'}`}
+                  className={`font-bold transition-all ${platform === 'ios' ? 'bg-blue-600 w-full p-4 rounded-xl text-white' : 'bg-teal-500/20 text-teal-400 px-6 py-2 rounded-full hover:bg-teal-500/30'}`}
                 >
                   Update Existing
                 </button>
