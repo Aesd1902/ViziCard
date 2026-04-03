@@ -43,7 +43,7 @@ export default function SplashScreen({ onComplete }: Props) {
               repeat: Infinity,
               delay: Math.random() * 5
             }}
-            className="absolute w-1 h-1 bg-teal-400 rounded-full blur-[1px]"
+            className={`absolute w-1 h-1 ${platform === 'ios' ? 'bg-blue-400' : 'bg-teal-400'} rounded-full blur-[1px]`}
           />
         ))}
       </div>

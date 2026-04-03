@@ -54,7 +54,7 @@ export default function HomeScreen({ onScan, onViewSaved }: Props) {
           </motion.div>
           <h2 className="text-5xl font-black tracking-tight text-white mb-3">Vizi Wallet</h2>
           <div className="flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4 text-teal-400" />
+            <Sparkles className={`w-4 h-4 ${platform === 'ios' ? 'text-blue-400' : 'text-teal-400'}`} />
             <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px]">AI-Powered Card Management</p>
           </div>
         </motion.div>
@@ -87,7 +87,7 @@ export default function HomeScreen({ onScan, onViewSaved }: Props) {
             <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
               <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5">
-                <History className="w-10 h-10 text-teal-400" />
+                <History className={`w-10 h-10 ${platform === 'ios' ? 'text-blue-400' : 'text-teal-400'}`} />
               </div>
               <span className="text-2xl font-black text-white uppercase tracking-widest">Saved Cards</span>
               <span className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Your Digital Collection</span>
