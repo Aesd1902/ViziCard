@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState } from 'react';
 import Webcam from 'react-webcam';
 import { motion } from 'motion/react';
-import { X, Camera, RefreshCw, Sparkles } from 'lucide-react';
+import { X, Camera, RefreshCw, Sparkles, Flashlight, FlashlightOff } from 'lucide-react';
 import { usePlatform } from '../hooks/usePlatform';
 
 interface Props {
@@ -14,6 +14,7 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
   const platform = usePlatform();
   const webcamRef = useRef<Webcam>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const [isFlashOn, setIsFlashOn] = useState(false);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -24,6 +25,21 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
 
   const toggleCamera = () => {
     setFacingMode(prev => prev === "user" ? "environment" : "user");
+    setIsFlashOn(false); // Reset flash when switching cameras
+  };
+
+  const toggleFlash = async () => {
+    if (!webcamRef.current?.stream) return;
+    const track = webcamRef.current.stream.getVideoTracks()[0];
+    if (track) {
+      try {
+        const advanced = { torch: !isFlashOn };
+        await track.applyConstraints({ advanced: [advanced] } as any);
+        setIsFlashOn(!isFlashOn);
+      } catch (err) {
+        console.error("Flash unavailable or unsupported", err);
+      }
+    }
   };
 
   return (
@@ -85,13 +101,25 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
           >
             <X className="w-7 h-7" />
           </motion.button>
-          <motion.button 
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleCamera}
-            className="w-14 h-14 bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white border border-white/10 shadow-2xl"
-          >
-            <RefreshCw className="w-7 h-7" />
-          </motion.button>
+
+          <div className="flex items-center gap-4">
+            {facingMode === 'environment' && (
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={toggleFlash}
+                className={`w-14 h-14 bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/10 shadow-2xl transition-colors ${isFlashOn ? 'text-yellow-400' : 'text-white'}`}
+              >
+                {isFlashOn ? <Flashlight className="w-7 h-7" /> : <FlashlightOff className="w-7 h-7" />}
+              </motion.button>
+            )}
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleCamera}
+              className="w-14 h-14 bg-black/40 backdrop-blur-xl rounded-2xl flex items-center justify-center text-white border border-white/10 shadow-2xl"
+            >
+              <RefreshCw className="w-7 h-7" />
+            </motion.button>
+          </div>
         </div>
 
         {/* Bottom Controls */}
