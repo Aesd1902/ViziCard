@@ -77,7 +77,7 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
       transition={{ type: "spring", damping: 25, stiffness: 200 }}
       className="fixed inset-0 z-50 bg-slate-950 flex flex-col safe-top"
     >
-      <div className="flex-1 overflow-y-auto px-6 pb-32">
+      <div className="flex-1 overflow-y-auto px-4 pb-32">
         <div className="flex justify-between items-center py-6 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-30">
           <motion.button 
             whileTap={{ scale: 0.9 }}
@@ -263,22 +263,26 @@ function InfoItem({ icon: Icon, label, value, onAction, onCopy, platform }: any)
     <motion.div 
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      className="group flex items-center gap-5 bg-slate-900/40 p-5 rounded-[1.5rem] border border-white/5 hover:border-white/10 transition-all"
+      className={`group flex items-center gap-4 p-4 transition-all ${
+        platform === 'ios'
+          ? 'bg-slate-900/40 backdrop-blur-xl rounded-[1.5rem] border border-white/10 hover:border-white/20'
+          : 'bg-slate-800 rounded-2xl shadow-md border-b-[3px] border-black/20 hover:border-teal-500/30'
+      }`}
     >
-      <div className={`w-12 h-12 ${platform === 'ios' ? 'bg-blue-500/10 text-blue-400' : 'bg-teal-500/10 text-teal-400'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+      <div className={`w-12 h-12 shrink-0 ${platform === 'ios' ? 'bg-blue-500/10 text-blue-400' : 'bg-teal-500/10 text-teal-400'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
         <Icon className="w-6 h-6" />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mb-1">{label}</p>
-        <p className="text-sm font-bold text-white truncate">{value}</p>
+      <div className="flex-1 min-w-0 pr-2">
+        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">{label}</p>
+        <p className="text-sm font-bold text-white leading-snug break-all">{value}</p>
       </div>
-      <div className="flex gap-1">
+      <div className="flex gap-1 shrink-0">
         {onAction && (
-          <button onClick={onAction} className="p-3 text-slate-600 hover:text-white transition-colors">
+          <button onClick={onAction} className="p-2 text-slate-500 hover:text-white transition-colors">
             <ExternalLink className="w-5 h-5" />
           </button>
         )}
-        <button onClick={onCopy} className="p-3 text-slate-600 hover:text-white transition-colors">
+        <button onClick={onCopy} className="p-2 text-slate-500 hover:text-white transition-colors">
           <Copy className="w-5 h-5" />
         </button>
       </div>
