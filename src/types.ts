@@ -4,8 +4,8 @@ export interface VisitingCard {
   enhancedImage?: string;
   extractedText: string;
   name?: string;
-  email?: string;
-  phone?: string;
+  email?: string | string[];
+  phone?: string | string[];
   address?: string;
   website?: string;
   company?: string;

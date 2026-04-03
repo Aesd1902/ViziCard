@@ -26,6 +26,11 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
 
   const [error, setError] = useState<string | null>(null);
 
+  const normalizeArray = (val: string | string[] | undefined | null): string[] => {
+    if (!val) return [];
+    return Array.isArray(val) ? val : [val];
+  };
+
   useEffect(() => {
     handleEnhance();
   }, []);
@@ -198,8 +203,12 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {data.name && <InfoItem icon={Check} label="Full Name" value={data.name} onCopy={() => copyToClipboard(data.name!)} platform={platform} />}
                   {data.company && <InfoItem icon={Sparkles} label="Organization" value={data.company} onCopy={() => copyToClipboard(data.company!)} platform={platform} />}
-                  {data.phone && <InfoItem icon={Phone} label="Contact Number" value={data.phone} onAction={() => openDialer(data.phone!)} onCopy={() => copyToClipboard(data.phone!)} platform={platform} />}
-                  {data.email && <InfoItem icon={Mail} label="Email Address" value={data.email} onAction={() => window.location.href = `mailto:${data.email}`} onCopy={() => copyToClipboard(data.email!)} platform={platform} />}
+                  {normalizeArray(data.phone).map((p, i) => (
+                    <InfoItem key={`phone-${i}`} icon={Phone} label={i === 0 ? "Primary Contact" : `Contact ${i + 1}`} value={p} onAction={() => openDialer(p)} onCopy={() => copyToClipboard(p)} platform={platform} />
+                  ))}
+                  {normalizeArray(data.email).map((e, i) => (
+                    <InfoItem key={`email-${i}`} icon={Mail} label={i === 0 ? "Email Address" : `Alternative Email ${i + 1}`} value={e} onAction={() => window.location.href = `mailto:${e}`} onCopy={() => copyToClipboard(e)} platform={platform} />
+                  ))}
                   {data.address && <InfoItem icon={MapPin} label="Location" value={data.address} onAction={() => openMaps(data.address!)} onCopy={() => copyToClipboard(data.address!)} platform={platform} />}
                   {data.website && <InfoItem icon={Globe} label="Digital Presence" value={data.website} onAction={() => window.open(`https://${data.website}`, '_blank')} onCopy={() => copyToClipboard(data.website!)} platform={platform} />}
                   

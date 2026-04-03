@@ -65,7 +65,7 @@ export async function extractCardData(base64Image: string) {
         {
           parts: [
             {
-              text: "Extract all relevant information from this visiting/business card. Return a JSON object with fields: name, email, phone, address, website, company, dates (array of strings if any dates/events are found), and fullText (all raw text found on the card). If a specific field is not found or unclear, leave it null.",
+              text: "Extract all relevant information from this visiting/business card. Return a JSON object with fields: name, email (array of distinct valid emails, max 3), phone (array of distinct valid standard formatted phone numbers, max 3), address, website, company, dates (array of strings if any dates/events are found), and fullText (all raw text found on the card). If a specific field is not found or unclear, return an empty array for lists, or null for strings.",
             },
             {
               inlineData: {
@@ -82,8 +82,8 @@ export async function extractCardData(base64Image: string) {
           type: Type.OBJECT,
           properties: {
             name: { type: Type.STRING },
-            email: { type: Type.STRING },
-            phone: { type: Type.STRING },
+            email: { type: Type.ARRAY, items: { type: Type.STRING } },
+            phone: { type: Type.ARRAY, items: { type: Type.STRING } },
             address: { type: Type.STRING },
             website: { type: Type.STRING },
             company: { type: Type.STRING },
