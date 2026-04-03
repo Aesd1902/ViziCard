@@ -24,19 +24,24 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
   const [data, setData] = useState<Partial<VisitingCard> | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'raw'>('info');
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     handleEnhance();
   }, []);
 
   const handleEnhance = async () => {
     setIsProcessing(true);
+    setError(null);
     try {
       await new Promise(r => setTimeout(r, 1500));
-      setIsEnhanced(true);
       const extracted = await extractCardData(card.image);
       setData(extracted);
+      setIsEnhanced(true);
     } catch (e) {
       console.error("OCR failed", e);
+      setError(e instanceof Error ? e.message : "Failed to extract card data. Please try again.");
+      setIsEnhanced(false);
     } finally {
       setIsProcessing(false);
     }
@@ -138,7 +143,29 @@ export default function CardPreview({ card, onSave, onCancel }: Props) {
 
         {/* Extracted Info */}
         <AnimatePresence mode="wait">
-          {!isProcessing && data && (
+          {!isProcessing && error && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 p-6 rounded-[2rem] bg-red-500/10 border border-red-500/20 text-center"
+            >
+              <div className="flex justify-center mb-3">
+                <div className="p-3 bg-red-500/20 rounded-2xl">
+                  <X className="w-6 h-6 text-red-500" />
+                </div>
+              </div>
+              <h4 className="text-red-400 font-bold mb-2">Processing Failed</h4>
+              <p className="text-slate-400 text-sm mb-6 pb-6 border-b border-white/5">{error}</p>
+              <button 
+                onClick={handleEnhance}
+                className={`px-8 py-3 bg-gradient-to-r ${platform === 'ios' ? 'from-blue-500 to-indigo-600 shadow-blue-500/20' : 'from-teal-500 to-emerald-600 shadow-teal-500/20'} rounded-xl text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-lg`}
+              >
+                Try Again
+              </button>
+            </motion.div>
+          )}
+
+          {!isProcessing && !error && data && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}

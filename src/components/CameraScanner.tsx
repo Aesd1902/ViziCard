@@ -40,8 +40,8 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
           screenshotFormat="image/jpeg"
           videoConstraints={{
             facingMode,
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
             aspectRatio: 16/9
           }}
           className="absolute inset-0 w-full h-full object-cover"
@@ -51,7 +51,7 @@ export default function CameraScanner({ onCapture, onBack }: Props) {
           imageSmoothing={true}
           onUserMedia={() => {}}
           onUserMediaError={() => {}}
-          screenshotQuality={1}
+          screenshotQuality={0.8}
         />
 
         {/* Dynamic Scan Line */}
