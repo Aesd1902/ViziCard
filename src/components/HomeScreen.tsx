@@ -65,32 +65,53 @@ export default function HomeScreen({ onScan, onViewSaved }: Props) {
             whileHover={{ scale: 1.05, rotateX: -8, rotateY: 8 }}
             whileTap={{ scale: 0.95 }}
             onClick={onScan}
-            className={`group relative h-64 md:h-80 bg-gradient-to-br ${platform === 'ios' ? 'from-blue-500 to-indigo-600' : 'from-teal-500 to-emerald-600'} rounded-[3rem] overflow-hidden shadow-2xl shadow-teal-500/30 border border-white/10 perspective-1000`}
+            className={`group relative h-64 md:h-80 overflow-hidden perspective-1000 ${
+              platform === 'ios' 
+                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[3rem] shadow-2xl border border-white/20 backdrop-blur-xl' 
+                : 'bg-teal-600 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-transparent'
+            }`}
           >
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+            <div className={`absolute inset-0 ${platform === 'ios' ? 'bg-black/10' : 'bg-black/5'} group-hover:bg-transparent transition-colors`} />
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-xl rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/20">
+              <div className={`w-20 h-20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${
+                platform === 'ios'
+                  ? 'bg-white/20 backdrop-blur-xl rounded-3xl border border-white/20'
+                  : 'bg-white/10 rounded-2xl'
+              }`}>
                 <Scan className="w-10 h-10 text-white" />
               </div>
-              <span className="text-2xl font-black text-white uppercase tracking-widest">Scan Card</span>
-              <span className="text-[10px] text-white/70 mt-2 font-bold uppercase tracking-widest">Instant AI Extraction</span>
+              <span className={`text-2xl font-black text-white tracking-widest ${platform === 'ios' ? 'uppercase' : ''}`}>Scan Card</span>
+              <span className={`text-[10px] ${platform === 'ios' ? 'text-white/70 uppercase' : 'text-teal-50 font-medium'} mt-2 tracking-widest`}>Instant AI Extraction</span>
             </div>
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full duration-1000" />
+            {platform === 'ios' && (
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full duration-1000" />
+            )}
+            {platform === 'android' && (
+              <div className="absolute inset-0 opacity-0 group-active:opacity-20 bg-white transition-opacity pointer-events-none" />
+            )}
           </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.05, rotateX: 8, rotateY: -8 }}
             whileTap={{ scale: 0.95 }}
             onClick={onViewSaved}
-            className="group relative h-64 md:h-80 bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border border-white/5 perspective-1000"
+            className={`group relative h-64 md:h-80 overflow-hidden perspective-1000 ${
+              platform === 'ios'
+                ? 'bg-slate-900 rounded-[3rem] shadow-2xl border border-white/5 backdrop-blur-xl'
+                : 'bg-slate-800 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-transparent'
+            }`}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
+            <div className={`absolute inset-0 ${platform === 'ios' ? 'bg-gradient-to-br from-slate-800 to-slate-900' : ''}`} />
             <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-              <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform border border-white/5">
+              <div className={`w-20 h-20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${
+                platform === 'ios'
+                  ? 'bg-slate-800 rounded-3xl border border-white/5'
+                  : 'bg-slate-700/50 rounded-2xl'
+              }`}>
                 <History className={`w-10 h-10 ${platform === 'ios' ? 'text-blue-400' : 'text-teal-400'}`} />
               </div>
-              <span className="text-2xl font-black text-white uppercase tracking-widest">Saved Cards</span>
-              <span className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-widest">Your Digital Collection</span>
+              <span className={`text-2xl font-black text-white tracking-widest ${platform === 'ios' ? 'uppercase' : ''}`}>Saved Cards</span>
+              <span className={`text-[10px] ${platform === 'ios' ? 'text-slate-400 uppercase tracking-widest font-bold' : 'text-slate-400 font-medium tracking-wide'} mt-2`}>Your Digital Collection</span>
             </div>
           </motion.button>
         </div>
@@ -112,16 +133,6 @@ export default function HomeScreen({ onScan, onViewSaved }: Props) {
             <span>Trusted by 10k+ professionals</span>
           </div>
           
-          {platform === 'ios' && (
-            <div className="mt-4 px-4 py-2 bg-blue-500/10 rounded-full border border-blue-500/20">
-              <p className="text-blue-400 text-[9px] font-bold uppercase tracking-widest">Optimized for iPhone 15 Pro</p>
-            </div>
-          )}
-          {platform === 'android' && (
-            <div className="mt-4 px-4 py-2 bg-teal-500/10 rounded-full border border-teal-500/20">
-              <p className="text-teal-400 text-[9px] font-bold uppercase tracking-widest">Optimized for Galaxy Fold</p>
-            </div>
-          )}
         </motion.div>
       </div>
     </div>
