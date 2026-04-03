@@ -57,7 +57,7 @@ export async function extractCardData(base64Image: string) {
     const base64Data = optimizedBase64.split(',')[1] || base64Image.split(',')[1];
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash", // Use stable model version
+      model: "gemini-1.5-flash-latest",
       contents: [
         {
           parts: [
