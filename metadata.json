@@ -1,0 +1,5 @@
+{
+  "name": "Vizi Card Wallet",
+  "description": "A digital wallet for your visiting cards with AI-powered scanning, text extraction, and smart actions.",
+  "requestFramePermissions": ["camera"]
+}
