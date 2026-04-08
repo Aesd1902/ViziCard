@@ -1,9 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const k1 = "AIzaSyCQynpn";
-const k2 = "1RmLzJxajiT3";
-const k3 = "-X505rA5gdXFNKw";
-const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || (k1 + k2 + k3);
+const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY;
 
 if (!apiKey) {
   console.warn("Gemini API Key is missing. OCR features will fail.");

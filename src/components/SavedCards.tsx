@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowLeft, Search, Trash2, Phone, 
   Mail, MapPin, Globe, Calendar, 
-  Plus, MoreVertical, ExternalLink, Sparkles
+  Plus, MoreVertical, ExternalLink, Sparkles,
+  FileDown
 } from 'lucide-react';
 import { VisitingCard } from '../types';
 import { cn } from '../lib/utils';
@@ -21,6 +22,82 @@ export default function SavedCards({ cards, onDelete, onBack, onScan }: Props) {
   const platform = usePlatform();
   const [search, setSearch] = useState('');
   const [selectedCard, setSelectedCard] = useState<VisitingCard | null>(null);
+
+  const saveCardAsPdf = (card: VisitingCard) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d')!;
+      // Apply brightness/contrast enhancement
+      ctx.filter = 'brightness(1.1) contrast(1.1)';
+      ctx.drawImage(img, 0, 0);
+      const jpegData = canvas.toDataURL('image/jpeg', 0.95);
+      
+      // Build a minimal PDF with the card image
+      const imgW = img.width;
+      const imgH = img.height;
+      // PDF page dimensions in points (72 dpi), fit to card aspect ratio
+      const pageW = 595; // A4 width in points
+      const pageH = Math.round(pageW * (imgH / imgW));
+      
+      const imgBytes = atob(jpegData.split(',')[1]);
+      const imgLen = imgBytes.length;
+      
+      let pdf = '%PDF-1.4\n';
+      // Object 1: Catalog
+      const obj1Off = pdf.length;
+      pdf += '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
+      // Object 2: Pages
+      const obj2Off = pdf.length;
+      pdf += `2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`;
+      // Object 3: Page
+      const obj3Off = pdf.length;
+      pdf += `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Contents 5 0 R /Resources << /XObject << /Img 4 0 R >> >> >>\nendobj\n`;
+      // Object 4: Image XObject
+      const obj4Off = pdf.length;
+      pdf += `4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imgLen} >>\nstream\n`;
+      const beforeStream = pdf.length;
+      // We'll handle binary data separately
+      const streamEnd = `\nendstream\nendobj\n`;
+      // Object 5: Content stream
+      const contentStr = `q ${pageW} 0 0 ${pageH} 0 0 cm /Img Do Q`;
+      const obj5Prefix = `5 0 obj\n<< /Length ${contentStr.length} >>\nstream\n${contentStr}\nendstream\nendobj\n`;
+      
+      // Build final binary PDF
+      const encoder = new TextEncoder();
+      const part1 = encoder.encode(pdf);
+      const imgBuf = new Uint8Array(imgLen);
+      for (let i = 0; i < imgLen; i++) imgBuf[i] = imgBytes.charCodeAt(i);
+      const part3 = encoder.encode(streamEnd);
+      const obj5Off = part1.length + imgBuf.length + part3.length;
+      const part4 = encoder.encode(obj5Prefix);
+      const xrefOff = obj5Off + part4.length;
+      const xref = encoder.encode(
+        `xref\n0 6\n0000000000 65535 f \n${String(obj1Off).padStart(10,'0')} 00000 n \n${String(obj2Off).padStart(10,'0')} 00000 n \n${String(obj3Off).padStart(10,'0')} 00000 n \n${String(obj4Off).padStart(10,'0')} 00000 n \n${String(obj5Off).padStart(10,'0')} 00000 n \ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOff}\n%%EOF\n`
+      );
+      
+      const finalPdf = new Uint8Array(part1.length + imgBuf.length + part3.length + part4.length + xref.length);
+      finalPdf.set(part1, 0);
+      finalPdf.set(imgBuf, part1.length);
+      finalPdf.set(part3, part1.length + imgBuf.length);
+      finalPdf.set(part4, part1.length + imgBuf.length + part3.length);
+      finalPdf.set(xref, part1.length + imgBuf.length + part3.length + part4.length);
+      
+      const blob = new Blob([finalPdf], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${card.name || 'visiting-card'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+    img.src = card.image;
+  };
 
   const filtered = cards.filter(c => 
     (c.name?.toLowerCase().includes(search.toLowerCase()) || 
@@ -96,7 +173,7 @@ export default function SavedCards({ cards, onDelete, onBack, onScan }: Props) {
                     <img 
                       src={card.image} 
                       alt="card" 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                      className="w-full h-full object-cover brightness-105 contrast-105 transition-all duration-700"
                       referrerPolicy="no-referrer"
                     />
                   </div>
@@ -150,7 +227,7 @@ export default function SavedCards({ cards, onDelete, onBack, onScan }: Props) {
                 <img 
                   src={selectedCard.image} 
                   alt="card" 
-                  className="w-full h-full object-cover brightness-110 contrast-110 saturate-0"
+                  className="w-full h-full object-cover brightness-110 contrast-110"
                   referrerPolicy="no-referrer"
                 />
                 <motion.button 
@@ -178,17 +255,27 @@ export default function SavedCards({ cards, onDelete, onBack, onScan }: Props) {
                   {selectedCard.website && <DetailAction icon={Globe} label="Visit Website" value={selectedCard.website} onClick={() => window.open(`https://${selectedCard.website}`, '_blank')} platform={platform} />}
                 </div>
 
-                <motion.button 
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    onDelete(selectedCard.id);
-                    setSelectedCard(null);
-                  }}
-                  className="w-full h-16 rounded-[1.5rem] bg-rose-500/10 text-rose-500 font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  Erase from Wallet
-                </motion.button>
+                <div className="flex gap-3">
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => saveCardAsPdf(selectedCard)}
+                    className={`flex-1 h-16 rounded-[1.5rem] ${platform === 'ios' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-teal-500/10 text-teal-400 border-teal-500/20'} font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 border hover:opacity-80 transition-all`}
+                  >
+                    <FileDown className="w-5 h-5" />
+                    Save as PDF
+                  </motion.button>
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      onDelete(selectedCard.id);
+                      setSelectedCard(null);
+                    }}
+                    className="flex-1 h-16 rounded-[1.5rem] bg-rose-500/10 text-rose-500 font-black uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition-all"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Erase
+                  </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

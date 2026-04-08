@@ -150,7 +150,7 @@ export default function CardPreview({ card, savedCards, onSave, onCancel }: Prop
               "relative w-full max-w-lg mx-auto aspect-[1.6/1] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-1000",
               isEnhanced 
                 ? platform === 'ios' ? "shadow-blue-500/20 ring-4 ring-blue-500/30" : "shadow-teal-500/20 ring-4 ring-teal-500/30"
-                : "grayscale contrast-125"
+                : ""
             )}
           >
             <img 
@@ -158,7 +158,7 @@ export default function CardPreview({ card, savedCards, onSave, onCancel }: Prop
               alt="captured" 
               className={cn(
                 "w-full h-full object-cover transition-all duration-1000",
-                isEnhanced ? "brightness-110 contrast-110 saturate-0" : ""
+                isEnhanced ? "brightness-110 contrast-110" : ""
               )}
               referrerPolicy="no-referrer"
             />
